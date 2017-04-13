@@ -26,12 +26,38 @@ def _check_inputs(x, c, df):
 
 
 def _compute_grid_params(M, eps):
+    """ helper function to compute parameters for gridding
+
+    Parameters
+    ----------
+    M : int
+        dimnsion of input data
+    eps : float
+        desired error bound. It should lie within 1E-1 and 1E-33
+
+    Returns
+    -------
+    Mr : int
+        dimension of oversampled data
+    Msp : int
+        number of points to include at each discreet point
+    tau : float
+        modeling parameter derived from gridding algorithm
+    """
     if eps <= 1E-33 or eps >= 1E-1:
         raise ValueError("eps = {0:.0e}; must satisfy "
                          "1e-33 < eps < 1e-1.".format(eps))
 
     # Choose Msp & tau from eps following Dutt & Rokhlin (1993)
-    ratio = 2 if eps > 1E-11 else 3
+    if eps > 1E-11:
+        ratio = 2  # oversampling ratio determine accuracy
+    else:
+        ratio = 3
+    # accuracy table
+    # [R, M_sp] = [2,3] -> 1e-3 accuracy
+    # [R, M_sp] = [2,6] -> single precision
+    # [R, M_sp] = [2,9] -> 1e-9 accuracy
+    # [R, M_sp] = [2,12] -> double accuracy
     Msp = int(-np.log(eps) / (np.pi * (ratio - 1) / (ratio - 0.5)) + 0.5)
     Mr = max(ratio * M, 2 * Msp)
     lambda_ = Msp / (ratio * (ratio - 0.5))
