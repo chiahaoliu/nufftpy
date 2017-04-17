@@ -70,11 +70,13 @@ def _gaussian_grid_1D(x, c, Mr, Msp, tau, fast_gridding):
     N = len(x)
     ftau = np.zeros(Mr, dtype=c.dtype)
     hx = 2 * np.pi / Mr
-    xmod = x % (2 * np.pi)
+    #FIXME : original xmod is incorrect, should scale into [0, 2pi]
+    #xmod = x % (2 * np.pi)
+    xmod = (x-x.min())/(x.max()-x.min())*2*np.pi
 
     m = 1 + (xmod // hx).astype(int)
-    msp = np.arange(-Msp, Msp)[:, np.newaxis]
-    mm = m + msp
+    msp = np.arange(-Msp, Msp)[:, np.newaxis] # newaxis expand dim
+    mm = m + msp # make grid at each m
 
     if fast_gridding:
         # Greengard & Lee (2004) approach
